@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 
 const TrackOrder = () => {
   const { orderId } = useParams();
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [items, setItems] = useState([]);

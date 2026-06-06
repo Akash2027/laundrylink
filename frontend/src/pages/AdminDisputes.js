@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -10,19 +10,13 @@ const AdminDisputes = () => {
   const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = 'http://localhost:5000/api';
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-  useEffect(() => {
-    fetchAllDisputes();
-  }, []);
-
-  const fetchAllDisputes = async () => {
+  const fetchAllDisputes = useCallback(async () => {
     try {
-      // Fetch all orders to find disputes
       const response = await axios.get(`${API_URL}/orders/provider/orders`, {
         headers: { Authorization: token }
       });
-      // For demo, showing sample disputes
       setDisputes([
         {
           id: 1,
@@ -39,7 +33,11 @@ const AdminDisputes = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, API_URL]);
+
+  useEffect(() => {
+    fetchAllDisputes();
+  }, [fetchAllDisputes]);
 
   const resolveDispute = async (disputeId, approve) => {
     try {
@@ -62,19 +60,19 @@ const AdminDisputes = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-lg sticky top-0 z-50">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      <nav className="sticky top-0 z-40 border-b" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🧺</span>
-            <span className="text-xl font-bold text-primary">LaundryLink - Admin</span>
+            <span className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>LaundryLink - Admin</span>
           </div>
           <button onClick={handleLogout} className="text-red-500 hover:text-red-700">Logout</button>
         </div>
       </nav>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="rounded-xl shadow-lg overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
           <div className="bg-gradient-to-r from-red-500 to-orange-500 p-6 text-white">
             <h1 className="text-2xl font-bold">Dispute Management</h1>
             <p className="opacity-90">Review and resolve customer disputes</p>
@@ -83,24 +81,24 @@ const AdminDisputes = () => {
           {loading ? (
             <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div></div>
           ) : disputes.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
+            <div className="text-center py-12">
               <div className="text-5xl mb-3">✅</div>
-              <p>No disputes to review</p>
+              <p style={{ color: 'var(--text-secondary)' }}>No disputes to review</p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
               {disputes.map((dispute) => (
                 <div key={dispute.id} className="p-6">
                   <div className="flex justify-between items-start flex-wrap gap-4">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="font-bold text-lg">Dispute #{dispute.id}</span>
+                        <span className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>Dispute #{dispute.id}</span>
                         <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">
                           {dispute.status}
                         </span>
                       </div>
                       <p className="text-gray-600">Order ID: #{dispute.order_id}</p>
-                      <p className="text-gray-600 mt-2">
+                      <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>
                         <span className="font-medium">Item:</span> {dispute.item_type} <br />
                         <span className="font-medium">Missing Quantity:</span> {dispute.missing_quantity} <br />
                         <span className="font-medium">Description:</span> {dispute.description}
