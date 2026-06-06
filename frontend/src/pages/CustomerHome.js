@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
 import ProfileModal from '../components/ProfileModal';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const API_URL = 'https://laundrylink-backend-sa7w.onrender.com/api';
@@ -18,36 +17,23 @@ const CustomerHome = () => {
 
   const radiusOptions = [5, 10, 20, 30, 50];
 
-  const getUserLocation = () => {
-    return new Promise((resolve) => {
-      if (user?.latitude && user?.longitude) {
-        resolve({ lat: user.latitude, lng: user.longitude });
-      } else if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            resolve({ lat: position.coords.latitude, lng: position.coords.longitude });
-          },
-          () => {
-            resolve({ lat: 12.974776, lng: 79.109526 });
-          }
-        );
-      } else {
-        resolve({ lat: 12.974776, lng: 79.109526 });
-      }
-    });
-  };
+  // Hardcoded Vellore location
+  const customerLat = 12.974776;
+  const customerLng = 79.109526;
 
   const fetchProviders = async () => {
     setLoading(true);
     try {
-      const location = await getUserLocation();
+      const url = `${API_URL}/orders/providers/nearby?latitude=${customerLat}&longitude=${customerLng}`;
+      console.log('Fetching:', url);
       
-      const response = await axios.get(
-        `${API_URL}/orders/providers/nearby?latitude=${location.lat}&longitude=${location.lng}`,
-        { headers: { Authorization: token } }
-      );
+      const response = await fetch(url, {
+        headers: { 'Authorization': token }
+      });
+      const data = await response.json();
+      console.log('Response:', data);
       
-      let allProvs = response.data.providers || [];
+      let allProvs = data.providers || [];
       let filtered = allProvs.filter(p => (p.distance_km || 999) <= radius);
       filtered.sort((a, b) => (a.distance_km || 999) - (b.distance_km || 999));
       
@@ -71,10 +57,6 @@ const CustomerHome = () => {
     navigate('/login');
   };
 
-  const getSuggestedRadii = () => {
-    return radiusOptions.filter(r => r > radius);
-  };
-
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <header className="sticky top-0 z-40 border-b" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
@@ -86,9 +68,9 @@ const CustomerHome = () => {
           <div className="flex items-center gap-4">
             <button onClick={() => setShowProfile(true)} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
               <span className="text-lg">👤</span>
-              <span className="font-medium hidden sm:inline">{user?.name?.split(' ')[0]}</span>
+              <span className="font-medium">{user?.name?.split(' ')[0]}</span>
             </button>
-            <button onClick={handleLogout} className="px-3 py-2 rounded-lg text-red-500">Logout</button>
+            <button onClick={handleLogout} className="text-red-500">Logout</button>
           </div>
         </div>
       </header>
@@ -120,7 +102,7 @@ const CustomerHome = () => {
             <div className="text-5xl mb-3">📍</div>
             <p>No laundry shops found within {radius} km</p>
             <div className="flex flex-wrap justify-center gap-2 mt-4">
-              {getSuggestedRadii().map((km) => (
+              {radiusOptions.filter(r => r > radius).map((km) => (
                 <button key={km} onClick={() => setRadius(km)} className="px-4 py-2 rounded-lg bg-blue-500 text-white text-sm">
                   Try {km} km
                 </button>
