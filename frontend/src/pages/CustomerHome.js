@@ -5,6 +5,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import ProfileModal from '../components/ProfileModal';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { API_URL } from '../config/api';
 
 const CustomerHome = () => {
   const [providers, setProviders] = useState([]);
@@ -49,6 +50,7 @@ const CustomerHome = () => {
         { headers: { Authorization: token } }
       );
       
+    
       let allProvs = response.data.providers || [];
       
       // Filter by radius
