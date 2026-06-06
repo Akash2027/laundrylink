@@ -33,7 +33,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
     setLoading(true);
     
     try {
-      const response = await axios.put(
+      await axios.put(
         'http://localhost:5000/api/auth/profile',
         formData,
         { headers: { Authorization: token } }
@@ -81,7 +81,6 @@ const ProfileModal = ({ isOpen, onClose }) => {
               disabled
               className="input-field opacity-70"
             />
-            <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Email cannot be changed</p>
           </div>
           
           <div>
